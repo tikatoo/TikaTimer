@@ -9,37 +9,68 @@ fetch('click.wav')
     .then((buf) => ctx.decodeAudioData(buf))
     .then((data) => {
         let repeater = new AudioTimer(data.sampleRate)
-        repeater.addSignal(0, 220, data)
-        repeater.addSignal(500, 220, data)
-        repeater.addSignal(1000, 220, data)
-        repeater.addSignal(1500, 220, data)
-        repeater.addSignal(2000, 220, data)
+        repeater.addSignal(0, 0, data)
+        repeater.addSignal(500, 0, data)
+        repeater.addSignal(1000, 0, data)
+        repeater.addSignal(1500, 0, data)
+        repeater.addSignal(2000, 0, data)
         let rep = repeater.generateBuffer(ctx)
 
         let timer = new AudioTimer(rep.sampleRate)
         let smPerMs = rep.sampleRate / 1000
-        let toSamples = (ms: number) => Math.round(ms * smPerMs)
-        timer.addSignal(10132, toSamples(2000), rep)
-        timer.addSignal(17074, toSamples(2000), rep)
-        timer.addSignal(23189, toSamples(2000), rep)
-        timer.addSignal(36272, toSamples(2000), rep)
-        timer.addSignal(63373, toSamples(2000), rep)
+        let pulsePoint = Math.round(2000 * smPerMs)
+        timer.addSignal(10132, pulsePoint, rep)
+        timer.addSignal(17074, pulsePoint, rep)
+        timer.addSignal(23189, pulsePoint, rep)
+        timer.addSignal(36272, pulsePoint, rep)
+        timer.addSignal(63373, pulsePoint, rep)
         timerAudio = timer.generateBuffer(ctx)
     })
     .then(() => {
         let btn = document.getElementById('start-btn') as HTMLButtonElement
-        let taSource = ctx.createBufferSource()
-        taSource.buffer = timerAudio
-        taSource.connect(ctx.destination)
-        taSource.addEventListener('ended', (e) => {
+        let taSource: AudioBufferSourceNode
+
+        let onStart = (e: MouseEvent | TouchEvent) => {
+            taSource.start(0)
+            e.preventDefault()
+            btn.removeEventListener('touchstart', onStart)
+            btn.removeEventListener('mousedown', onStart)
+            btn.addEventListener('touchstart', onStop)
+            btn.addEventListener('mousedown', onStop)
+            btn.textContent = 'Stop'
+        }
+
+        let isClickEvent: (e: Event | null | undefined) => e is Event
+        if (typeof (<any>window).TouchEvent == 'undefined') {
+            isClickEvent = (e): e is Event =>
+                e != null && e instanceof MouseEvent
+        } else {
+            isClickEvent = (e): e is Event =>
+            e != null && (
+                e instanceof MouseEvent || e instanceof TouchEvent
+            )
+        }
+
+        let onStop = (e?: Event) => {
+            if (isClickEvent(e)) {
+                taSource.stop()
+                e.preventDefault()
+            }
+
             taSource = ctx.createBufferSource()
             taSource.buffer = timerAudio
             taSource.connect(ctx.destination)
-            btn.disabled = false
-        })
-        btn.addEventListener('click', (e) => {
-            btn.disabled = true
-            taSource.start(0)
-        })
-        btn.disabled = false
+            taSource.addEventListener('ended', onStop)
+
+            btn.removeEventListener('touchstart', onStop)
+            btn.removeEventListener('mousedown', onStop)
+            btn.addEventListener('touchstart', onStart)
+            btn.addEventListener('mousedown', onStart)
+            btn.textContent = 'Start'
+        }
+
+        btn.addEventListener('touchstart', onStart)
+        btn.addEventListener('mousedown', onStart)
+
+        onStop()
     })
