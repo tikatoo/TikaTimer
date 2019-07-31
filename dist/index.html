@@ -1,10 +1,91 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Hi...</title>
+        <title>TikaTimer</title>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+        <style>
+            body {
+                font-family: sans-serif;
+            }
+
+            .page-width {
+                background: #eee;
+                border-radius: 10px;
+                padding: 10px;
+                margin: 0 auto 10px;
+                max-width: 500px;
+            }
+
+            h2.timer-display {
+                margin: 0;
+                text-align: center;
+                font-size: 5em;
+                cursor: pointer;
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+            }
+
+            .offset-entry {
+                font-size: 1.5em;
+                margin-bottom: 5px;
+            }
+
+            .offset-entry:last-child {
+                margin-bottom: 0;
+            }
+
+            .offset-entry * {
+                font-size: 1em;
+            }
+
+            .offset-entry input.offset-value {
+                background: #fbfbfb;
+                border: 1px solid #888;
+                border-radius: 5px;
+                -webkit-appearance: textfield;
+                -moz-appearance: textfield;
+            }
+
+            .offset-entry .i-trash {
+                float: right;
+                cursor: pointer;
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+            }
+        </style>
     </head>
     <body>
-        <button id="start-btn" disabled>Start</button>
+        <div id="app">
+            <div class="timer-control page-width">
+                <h2 class="timer-display">0.0</h2>
+            </div>
+            <div class="configure page-width">
+                <div class="offset-entry">
+                    <input class="offset-value" type="number" />
+                    <span class="i-trash">D</span>
+                </div>
+                <div class="offset-entry">
+                    <input class="offset-value" type="number" />
+                    <span class="i-trash">D</span>
+                </div>
+                <div class="offset-entry">
+                    <input class="offset-value" type="number" />
+                    <span class="i-trash">D</span>
+                </div>
+                <div class="offset-entry">
+                    <input class="offset-value" type="number" />
+                    <span class="i-trash">D</span>
+                </div>
+            </div>
+        </div>
+
+
         <script src="bundle.js"></script>
     </body>
 </html>

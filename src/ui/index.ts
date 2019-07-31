@@ -1,4 +1,5 @@
 import AudioTimer from '../core/AudioTimer'
+import OffsetConfigure from './c/OffsetConfigure.vue'
 
 
 let ctx = new AudioContext()
@@ -25,6 +26,20 @@ fetch('click.wav')
         timer.addSignal(36272, pulsePoint, rep)
         timer.addSignal(63373, pulsePoint, rep)
         timerAudio = timer.generateBuffer(ctx)
+    })
+    .then(() => {
+        new OffsetConfigure({
+            el: '#app',
+            data: {
+                offsets: [
+                    { value: 10.132 },
+                    { value: 17.074 },
+                    { value: 23.189 },
+                    { value: 36.272 },
+                    { value: 63.373 },
+                ]
+            }
+        })
     })
     .then(() => {
         let btn = document.getElementById('start-btn') as HTMLButtonElement
@@ -73,4 +88,5 @@ fetch('click.wav')
         btn.addEventListener('mousedown', onStart)
 
         onStop()
+        btn.disabled = false
     })
