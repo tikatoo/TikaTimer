@@ -4,11 +4,35 @@
     </div>
 </template>
 
+<style scoped>
+    h2.timer-display {
+        margin: 0;
+        text-align: center;
+        font-size: 5em;
+        cursor: pointer;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+</style>
+
 <script lang="ts">
 import Vue from 'vue'
 
+import { AudioSourceUpdater, initTimerController }
+    from '../timer-activator'
+
+
 interface IValueContainer {
     value: number
+}
+
+interface IComponentPrivateAttrs {
+    privStarted: boolean | null
+    privAnimFrame: number | null
+    privContext: AudioContext
+    privUpdateSource: AudioSourceUpdater
 }
 
 function getTimerValue(offsets: IValueContainer[]): number {
@@ -19,58 +43,8 @@ function getTimerValue(offsets: IValueContainer[]): number {
     }
 }
 
-type AudioSourceUpdater = (newAudioSource: AudioScheduledSourceNode) => void
-function initTimerController(
-    el: HTMLElement, ctx: AudioContext,
-    onStart: () => void, onStop: () => void, onReset: () => void
-): AudioSourceUpdater {
-    let audioSource: AudioScheduledSourceNode | null = null
-
-    let eventKind: ('mousedown' | 'touchstart') =
-        (<any>window).TouchEvent == null ? 'mousedown' : 'touchstart'
-    type EventHandler = (event: MouseEvent | TouchEvent) => void
-    let changeHandlers = (toRemove: EventHandler | null, toAdd: EventHandler) => {
-        el.removeEventListener(eventKind, toRemove as EventHandler)
-        el.addEventListener(eventKind, toAdd)
-    }
-
-    let onActivateStart = (event: MouseEvent | TouchEvent) => {
-        // TODO: Start audio
-        event.preventDefault()
-        changeHandlers(onActivateStart, onActivateStop)
-        onStart()
-    }
-
-    let onActivateStop = (event: MouseEvent | TouchEvent) => {
-        // TODO: Stop audio
-        event.preventDefault()
-        changeHandlers(onActivateStop, onActivateReset)
-        onStop()
-    }
-
-    let onActivateReset = (event: MouseEvent | TouchEvent) => {
-        event.preventDefault()
-        changeHandlers(onActivateReset, onActivateStart)
-        onReset()
-    }
-
-    changeHandlers(null, onActivateStart)
-
-    return (newAudioSource) => {
-        newAudioSource.connect(ctx.destination)
-        audioSource = newAudioSource
-    }
-}
-
-interface ComponentPrivateAttrs {
-    privStarted: boolean | null
-    privAnimFrame: number | null
-    privContext: AudioContext
-    privUpdateSource: AudioSourceUpdater
-}
-
-function priv(component: Vue): ComponentPrivateAttrs {
-    return <ComponentPrivateAttrs><unknown>component
+function priv(component: Vue): IComponentPrivateAttrs {
+    return <IComponentPrivateAttrs><unknown>component
 }
 
 export default Vue.extend({
@@ -136,17 +110,4 @@ export default Vue.extend({
     },
 })
 </script>
-
-<style scoped>
-    h2.timer-display {
-        margin: 0;
-        text-align: center;
-        font-size: 5em;
-        cursor: pointer;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-    }
-</style>
 
