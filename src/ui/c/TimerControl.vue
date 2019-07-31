@@ -11,16 +11,24 @@ interface IValueContainer {
     value: number
 }
 
+function getTimerValue(offsets: IValueContainer[]): number {
+    if (offsets == null || offsets.length === 0) {
+        return 0
+    } else {
+        return offsets[offsets.length - 1].value
+    }
+}
+
 export default Vue.extend({
-    props: ['timerLength'],
+    props: ['offsets'],
     data() {
         return {
-            timerValue: this.timerLength
+            timerValue: getTimerValue(this.offsets)
         }
     },
     watch: {
-        timerLength(newValue: number, oldValue: number) {
-            this.timerValue = newValue
+        offsets(newValue: IValueContainer[], oldValue: IValueContainer[]) {
+            this.timerValue = getTimerValue(newValue)
         }
     },
     methods: {

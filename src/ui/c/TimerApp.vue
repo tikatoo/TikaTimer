@@ -1,6 +1,6 @@
 <template>
     <div class="app">
-        <timer-control :timerLength="timerLength" />
+        <timer-control :offsets="offsets" />
         <offset-configure ref="configuration" v-on:change="updateOffsets()" />
     </div>
 </template>
@@ -14,18 +14,12 @@ export default Vue.extend({
     components: { TimerControl, OffsetConfigure },
     data() {
         return {
-            timerLength: 0
+            offsets: []
         }
     },
     methods: {
         updateOffsets() {
-            let offsets = (<Vue>this.$refs.configuration).$data.offsets
-            
-            if (offsets.length === 0) {
-                this.timerLength = 0
-            } else {
-                this.timerLength = offsets[offsets.length - 1].value
-            }
+            this.offsets = (<Vue>this.$refs.configuration).$data.offsets
         }
     },
 })
