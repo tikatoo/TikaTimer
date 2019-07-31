@@ -2,9 +2,10 @@
     <div class="configure page-width">
         <offset-entry
             v-for="(offset, index) in offsets"
-            v-bind:key="index"
             v-model="offset.value"
-            v-on:change="onChange()"
+            :key="index"
+            @change="onChange()"
+            @delete="onDelete(index)"
             />
         <offset-entry v-on:change="onAdd($event)" />
     </div>
@@ -20,14 +21,20 @@ interface IValueContainer {
 
 export default Vue.extend({
     components: { OffsetEntry },
+
     data() {
         return {
             offsets: (<IValueContainer[]> [])
         }
     },
+
     methods: {
         onChange() {
             this.offsets.sort((a, b) => a.value - b.value)
+            this.$emit('change')
+        },
+        onDelete(index: number) {
+            this.offsets.splice(index, 1)
             this.$emit('change')
         },
         onAdd(value: number) {

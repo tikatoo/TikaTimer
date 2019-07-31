@@ -5,8 +5,6 @@
             v-on:change="valueChanged($event.target.value,
                                       $event.target.checkValidity())"
             />
-
-        <span class="i-trash">D</span>
     </div>
 </template>
 
@@ -20,7 +18,9 @@ export default Vue.extend({
     },
     methods: {
         valueChanged(newValue: string, valid: boolean) {
-            if (valid) {
+            if (newValue === "") {
+                this.$emit('delete')
+            } else if (valid) {
                 this.$emit('change', Number.parseFloat(newValue))
             }
         }
@@ -43,16 +43,9 @@ export default Vue.extend({
         background: #fbfbfb;
         border: 1px solid #888;
         border-radius: 5px;
+        display: block;
+        width: calc(100% - 4px);
         -webkit-appearance: textfield;
         -moz-appearance: textfield;
-    }
-
-    .offset-entry .i-trash {
-        float: right;
-        cursor: pointer;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
     }
 </style>
