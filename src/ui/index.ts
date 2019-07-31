@@ -1,5 +1,5 @@
 import AudioTimer from '../core/AudioTimer'
-import OffsetConfigure from './c/OffsetConfigure.vue'
+import TimerApp from './c/TimerApp.vue'
 
 
 let ctx = new AudioContext()
@@ -28,18 +28,7 @@ fetch('click.wav')
         timerAudio = timer.generateBuffer(ctx)
     })
     .then(() => {
-        new OffsetConfigure({
-            el: '#app',
-            data: {
-                offsets: [
-                    { value: 10.132 },
-                    { value: 17.074 },
-                    { value: 23.189 },
-                    { value: 36.272 },
-                    { value: 63.373 },
-                ]
-            }
-        })
+        new TimerApp({ el: '#app' })
     })
     .then(() => {
         let btn = document.getElementById('start-btn') as HTMLButtonElement

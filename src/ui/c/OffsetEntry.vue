@@ -1,6 +1,6 @@
 <template>
     <div class="offset-entry">
-        <input class="offset-value" type="number" step="any"
+        <input class="offset-value" type="number" step="0.001"
             v-model="offsetValue"
             v-on:change="valueChanged($event.target.value,
                                       $event.target.checkValidity())"

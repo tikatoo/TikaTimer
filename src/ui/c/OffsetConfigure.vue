@@ -31,12 +31,16 @@ export default Vue.extend({
             this.$emit('change')
         },
         onAdd(value: number) {
-            for (let [index, o] of this.offsets.entries()) {
+            let index = this.offsets.length
+            for (let [i, o] of this.offsets.entries()) {
                 if (o.value > value) {
-                    this.offsets.splice(index, 0, { value })
+                    index = i
                     break
                 }
             }
+
+            this.offsets.splice(index, 0, { value })
+            this.$emit('change')
         }
     },
 })
