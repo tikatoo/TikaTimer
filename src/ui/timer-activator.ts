@@ -5,7 +5,7 @@ export function initTimerController(
     el: HTMLElement, ctx: AudioContext,
     onStart: () => void, onStop: () => void, onReset: () => void
 ): AudioSourceUpdater {
-    let audioSource: AudioScheduledSourceNode | null = null
+    let audioSource: AudioScheduledSourceNode
 
     let eventKind: ('mousedown' | 'touchstart') =
         (<any>window).TouchEvent == null ? 'mousedown' : 'touchstart'
@@ -16,28 +16,36 @@ export function initTimerController(
     }
 
     let onActivateStart = (event: MouseEvent | TouchEvent) => {
-        // TODO: Start audio
+        audioSource.start(0)
         event.preventDefault()
         changeHandlers(onActivateStart, onActivateStop)
         onStart()
     }
 
     let onActivateStop = (event: MouseEvent | TouchEvent) => {
-        // TODO: Stop audio
+        audioSource.stop(0)
         event.preventDefault()
+        onAfterStop()
+    }
+
+    let onAfterStop = () => {
         changeHandlers(onActivateStop, onActivateReset)
         onStop()
     }
 
     let onActivateReset = (event: MouseEvent | TouchEvent) => {
         event.preventDefault()
+        doReset()
+    }
+
+    let doReset = () => {
         changeHandlers(onActivateReset, onActivateStart)
         onReset()
     }
 
-    changeHandlers(null, onActivateStart)
-
     return (newAudioSource) => {
+        changeHandlers(null, onActivateStart)
+        newAudioSource.addEventListener('ended', onAfterStop)
         newAudioSource.connect(ctx.destination)
         audioSource = newAudioSource
     }

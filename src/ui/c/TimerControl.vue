@@ -20,6 +20,7 @@
 <script lang="ts">
 import Vue from 'vue'
 
+import AudioTimer from '../../core/AudioTimer'
 import { AudioSourceUpdater, initTimerController }
     from '../timer-activator'
 
@@ -33,6 +34,9 @@ interface IComponentPrivateAttrs {
     privAnimFrame: number | null
     privContext: AudioContext
     privUpdateSource: AudioSourceUpdater
+    privAudioBasePulse: number
+    privAudioBase: AudioBuffer
+    privAudioFull: AudioBuffer
 }
 
 function getTimerValue(offsets: IValueContainer[]): number {
@@ -49,30 +53,69 @@ function priv(component: Vue): IComponentPrivateAttrs {
 
 export default Vue.extend({
     props: ['offsets'],
-    mounted() {
+
+    async created() {
         let ctx = new AudioContext()
         priv(this).privContext = ctx
+
+        let response = await fetch('click.wav')
+        if (!response.ok) {
+            throw response.statusText
+        }
+
+        let clickAudio = await ctx.decodeAudioData(await response.arrayBuffer())
+
+        let repeater = new AudioTimer(clickAudio.sampleRate)
+        repeater.addSignal(0, 0, clickAudio)
+        repeater.addSignal(500, 0, clickAudio)
+        repeater.addSignal(1000, 0, clickAudio)
+        repeater.addSignal(1500, 0, clickAudio)
+        repeater.addSignal(2000, 0, clickAudio)
+        priv(this).privAudioBasePulse = 2.000 * clickAudio.sampleRate
+        priv(this).privAudioBase = repeater.generateBuffer(ctx)
+    },
+
+    mounted() {
         priv(this).privUpdateSource = initTimerController(
-            this.$refs.controller as HTMLHeadingElement, ctx,
+            this.$refs.controller as HTMLHeadingElement, priv(this).privContext,
             this.start.bind(this), this.stop.bind(this), this.reset.bind(this)
         )
     },
+
     data() {
         return {
             timerStart: getTimerValue(this.offsets),
             timerProgress: 0
         }
     },
+
     watch: {
         offsets(newValue: IValueContainer[], oldValue: IValueContainer[]) {
             this.timerStart = getTimerValue(newValue)
+
+            let ctx = priv(this).privContext
+            let source = ctx.createBufferSource()
+            let pulsePoint = priv(this).privAudioBasePulse
+            let pulseAudio = priv(this).privAudioBase
+
+            let timer = new AudioTimer(pulseAudio.sampleRate)
+            for (let { value } of newValue) {
+                timer.addSignal(value * 1000, pulsePoint, pulseAudio)
+            }
+            let fullAudio = timer.generateBuffer(ctx)
+
+            priv(this).privAudioFull = fullAudio
+            source.buffer = fullAudio
+            priv(this).privUpdateSource(source)
         }
     },
+
     computed: {
         timerValue(): number {
             return this.timerStart - this.timerProgress
         },
     },
+
     methods: {
         start() {
             // Animate the countdown timer.
@@ -106,6 +149,10 @@ export default Vue.extend({
 
         reset() {
             this.timerProgress = 0
+            let ctx = priv(this).privContext
+            let source = ctx.createBufferSource()
+            source.buffer = priv(this).privAudioFull
+            priv(this).privUpdateSource(source)
         },
     },
 })
