@@ -10,9 +10,6 @@
     </div>
 </template>
 
-<style scoped>
-</style>
-
 <script lang="ts">
 import Vue from 'vue'
 export default Vue.extend({
@@ -30,3 +27,32 @@ export default Vue.extend({
     }
 })
 </script>
+
+
+<style scoped>
+    .offset-entry {
+        font-size: 1.5em;
+        margin-bottom: 5px;
+    }
+    .offset-entry * { font-size: 1em; }
+    .offset-entry:last-child {
+        margin-bottom: 0;
+    }
+
+    .offset-entry input.offset-value {
+        background: #fbfbfb;
+        border: 1px solid #888;
+        border-radius: 5px;
+        -webkit-appearance: textfield;
+        -moz-appearance: textfield;
+    }
+
+    .offset-entry .i-trash {
+        float: right;
+        cursor: pointer;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+</style>
