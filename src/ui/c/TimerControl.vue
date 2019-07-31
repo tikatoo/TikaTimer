@@ -73,6 +73,8 @@ export default Vue.extend({
         repeater.addSignal(2000, 0, clickAudio)
         priv(this).privAudioBasePulse = 2.000 * clickAudio.sampleRate
         priv(this).privAudioBase = repeater.generateBuffer(ctx)
+
+        this.$emit('ready')
     },
 
     mounted() {
