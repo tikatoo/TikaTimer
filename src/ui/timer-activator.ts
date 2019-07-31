@@ -15,28 +15,16 @@ export function initTimerController(
         el.addEventListener('touchstart', toAdd)
     }
 
-    let started = false
-    let stopped = false
-    let reseted = false
-
     let onActivateStart = (event: MouseEvent | TouchEvent) => {
-        if (started) { return }
         audioSource.start(0)
         event.preventDefault()
-        started = true
-        stopped = false
-        reseted = false
         changeHandlers(onActivateStart, onActivateStop)
         onStart()
     }
 
     let onActivateStop = (event: MouseEvent | TouchEvent) => {
-        if (stopped) { return }
         audioSource.stop(0)
         event.preventDefault()
-        started = false
-        stopped = true
-        reseted = false
         onAfterStop()
     }
 
@@ -46,11 +34,7 @@ export function initTimerController(
     }
 
     let onActivateReset = (event: MouseEvent | TouchEvent) => {
-        if (reseted) { return }
         event.preventDefault()
-        started = false
-        stopped = false
-        reseted = true
         doReset()
     }
 
