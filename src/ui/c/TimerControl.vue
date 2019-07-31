@@ -1,6 +1,7 @@
 <template>
     <div class="timer-control page-width">
-        <h2 class="timer-display" ref="controller">{{ timerValue.toFixed(3) }}</h2>
+        <h2 class="timer-display" v-if="activated" ref="controller">{{ timerValue.toFixed(3) }}</h2>
+        <h2 class="timer-display" v-else @click="activated = true">Start</h2>
     </div>
 </template>
 
@@ -77,15 +78,22 @@ export default Vue.extend({
         this.$emit('ready')
     },
 
-    mounted() {
-        priv(this).privUpdateSource = initTimerController(
-            this.$refs.controller as HTMLHeadingElement, priv(this).privContext,
-            this.start.bind(this), this.stop.bind(this), this.reset.bind(this)
-        )
+    updated() {
+        if (this.activated && priv(this).privUpdateSource == null) {
+            priv(this).privContext.resume()
+            priv(this).privUpdateSource = initTimerController(
+                this.$refs.controller as HTMLHeadingElement, priv(this).privContext,
+                this.start.bind(this), this.stop.bind(this), this.reset.bind(this)
+            )
+            if (priv(this).privAudioFull != null) {
+                this.setSource()
+            }
+        }
     },
 
     data() {
         return {
+            activated: false,
             timerStart: getTimerValue(this.offsets),
             timerProgress: 0
         }
@@ -96,7 +104,6 @@ export default Vue.extend({
             this.timerStart = getTimerValue(newValue)
 
             let ctx = priv(this).privContext
-            let source = ctx.createBufferSource()
             let pulsePoint = priv(this).privAudioBasePulse
             let pulseAudio = priv(this).privAudioBase
 
@@ -107,9 +114,10 @@ export default Vue.extend({
             let fullAudio = timer.generateBuffer(ctx)
 
             priv(this).privAudioFull = fullAudio
-            source.buffer = fullAudio
-            priv(this).privUpdateSource(source)
-        }
+            if (priv(this).privUpdateSource != null) {
+                this.setSource()
+            }
+        },
     },
 
     computed: {
@@ -119,6 +127,12 @@ export default Vue.extend({
     },
 
     methods: {
+        setSource() {
+            let source = priv(this).privContext.createBufferSource()
+            source.buffer = priv(this).privAudioFull
+            priv(this).privUpdateSource(source)
+        },
+
         start() {
             // Animate the countdown timer.
             let last = 0
