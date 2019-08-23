@@ -7,36 +7,53 @@ export function initTimerController(
 ): AudioSourceUpdater {
     let audioSource: AudioScheduledSourceNode
 
-    type EventHandler = (event: MouseEvent | TouchEvent) => void
-    let changeHandlers = (toRemove: EventHandler | null, toAdd: EventHandler) => {
-        el.removeEventListener('mousedown', toRemove as EventHandler)
-        el.removeEventListener('touchstart', toRemove as EventHandler)
-        el.addEventListener('mousedown', toAdd)
-        el.addEventListener('touchstart', toAdd)
+    type SomeEvent = KeyboardEvent | MouseEvent | TouchEvent
+    type AnyHandler = (event: SomeEvent) => void
+    type EventHandlers = {
+        keyboard: (event: KeyboardEvent) => void,
+        mouse: (event: MouseEvent) => void,
+        touch: (event: TouchEvent) => void,
+    }
+    let changeHandlers = (toRemove: EventHandlers | null, toAdd: EventHandlers) => {
+        if (toRemove != null) {
+            document.removeEventListener('keydown', toRemove.keyboard)
+            el.removeEventListener('mousedown', toRemove.mouse)
+            el.removeEventListener('touchstart', toRemove.touch)
+        }
+        document.addEventListener('keydown', toAdd.keyboard)
+        el.addEventListener('mousedown', toAdd.mouse)
+        el.addEventListener('touchstart', toAdd.touch)
     }
 
-    let onActivateStart = (event: MouseEvent | TouchEvent) => {
+    let makeHandler = (handler: AnyHandler) => ({
+        mouse: handler, touch: handler,
+        keyboard(event: KeyboardEvent) {
+            if (event.key == ' ') { handler(event) }
+        },
+    })
+
+    let onActivateStart = makeHandler((event: SomeEvent) => {
         audioSource.start(0)
         event.preventDefault()
         changeHandlers(onActivateStart, onActivateStop)
         onStart()
-    }
+    })
 
-    let onActivateStop = (event: MouseEvent | TouchEvent) => {
+    let onActivateStop = makeHandler((event: SomeEvent) => {
         audioSource.stop(0)
         event.preventDefault()
         onAfterStop()
-    }
+    })
 
     let onAfterStop = () => {
         changeHandlers(onActivateStop, onActivateReset)
         onStop()
     }
 
-    let onActivateReset = (event: MouseEvent | TouchEvent) => {
+    let onActivateReset = makeHandler((event: SomeEvent) => {
         event.preventDefault()
         doReset()
-    }
+    })
 
     let doReset = () => {
         changeHandlers(onActivateReset, onActivateStart)
